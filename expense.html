@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expense Tracker</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 16px;
+    background: #c3b1e1;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #000;
+  }
+  .container {
+    width: 100%;
+    max-width: 400px;
+    background: #fcfcff;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  }
+  h1 { text-align: center; font-size: 24px; margin: 4px 0 32px; }
+  h3 { font-size: 18px; margin: 0 0 8px; padding-bottom: 12px; border-bottom: 2px solid #e0d4f5; }
+  .balance-label { font-size: 14px; font-weight: bold; text-transform: uppercase; margin: 0; }
+  .balance { font-size: 32px; margin: 0 0 20px; }
+  .inc-exp {
+    display: flex;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    padding: 20px 0;
+    margin-bottom: 40px;
+  }
+  .inc-exp > div { flex: 1; text-align: center; }
+  .inc-exp > div:first-child { border-right: 2px solid #e5e5e5; }
+  .inc-exp h4 { margin: 0 0 6px; font-size: 14px; text-transform: uppercase; }
+  .money { font-size: 24px; margin: 0; }
+  .money.plus { color: #5bd75b; }
+  .money.minus { color: #f26b6b; }
+  .list { list-style: none; padding: 0; margin: 16px 0 40px; }
+  .list li {
+    display: flex;
+    justify-content: space-between;
+    background: #fff;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    border-right: 6px solid;
+    font-size: 15px;
+  }
+  .list li.plus { border-color: #5bd75b; }
+  .list li.minus { border-color: #f26b6b; }
+  form {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    padding: 16px;
+    margin-top: 16px;
+  }
+  label { display: block; margin: 0 0 8px; font-size: 16px; }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d9cdee;
+    border-radius: 5px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .radio { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .radio label { margin: 0; }
+  button {
+    width: 100%;
+    padding: 6px;
+    background: #9061c7;
+    color: #fff;
+    border: 0;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  button:hover { background: #7d4fb8; }
+  #error { color: #f26b6b; font-size: 13px; min-height: 16px; margin: 0 0 8px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Expense Tracker</h1>
+
+    <h4 class="balance-label">Your balance</h4>
+    <h2 class="balance" id="balance">$0.00</h2>
+
+    <div class="inc-exp">
+      <div>
+        <h4>Income</h4>
+        <p class="money plus" id="income">$0.00</p>
+      </div>
+      <div>
+        <h4>Expense</h4>
+        <p class="money minus" id="expense">$0.00</p>
+      </div>
+    </div>
+
+    <h3>History</h3>
+    <ul class="list" id="list"></ul>
+
+    <h3>Add new transaction</h3>
+    <form id="form">
+      <label for="text">Title</label>
+      <input type="text" id="text" placeholder="Enter title...">
+
+      <label for="amount">Amount</label>
+      <input type="number" id="amount" step="0.01" min="0" placeholder="Enter amount...">
+
+      <div class="radio">
+        <input type="radio" name="type" id="income-radio" value="income">
+        <label for="income-radio">Income</label>
+      </div>
+      <div class="radio">
+        <input type="radio" name="type" id="expense-radio" value="expense">
+        <label for="expense-radio">Expense</label>
+      </div>
+
+      <p id="error"></p>
+      <button type="submit">Add transaction</button>
+    </form>
+  </div>
+
+<script>
+  let transactions = [
+    { id: 1, text: 'Groceries', amount: -50 },
+    { id: 2, text: 'Salary',    amount: 2300 },
+    { id: 3, text: 'Phone',     amount: -1000 }
+  ];
+
+  const listEl = document.getElementById('list');
+  const balanceEl = document.getElementById('balance');
+  const incomeEl = document.getElementById('income');
+  const expenseEl = document.getElementById('expense');
+  const form = document.getElementById('form');
+  const errorEl = document.getElementById('error');
+
+  const fmt = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtSigned = n => (n < 0 ? '-' : '+') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function render() {
+    listEl.innerHTML = '';
+    transactions.forEach(t => {
+      const li = document.createElement('li');
+      li.className = t.amount < 0 ? 'minus' : 'plus';
+      li.innerHTML = `<span></span><span>${fmtSigned(t.amount)}</span>`;
+      li.firstChild.textContent = t.text;
+      listEl.appendChild(li);
+    });
+
+    const income = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const expense = transactions.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    balanceEl.textContent = fmt(income - expense);
+    incomeEl.textContent = fmt(income);
+    expenseEl.textContent = fmt(expense);
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = document.getElementById('text').value.trim();
+    const amount = parseFloat(document.getElementById('amount').value);
+    const type = form.querySelector('input[name="type"]:checked');
+
+    if (!text || isNaN(amount) || amount <= 0 || !type) {
+      errorEl.textContent = 'Enter a title, a positive amount, and choose income or expense.';
+      return;
+    }
+    errorEl.textContent = '';
+
+    transactions.push({
+      id: Date.now(),
+      text,
+      amount: type.value === 'expense' ? -amount : amount
+    });
+    form.reset();
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>

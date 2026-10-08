@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Weather & Travel Dashboard</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 30px 0;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #d5e9f2;
+            font-size: 16px;
+        }
+
+        /* Search */
+        .search-box {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            width: 60%;
+            max-width: 500px;
+            padding: 15px 18px;
+            border: none;
+            border-radius: 10px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .search-box button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            background: #00c6ff;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #0099cc;
+            transform: translateY(-2px);
+        }
+
+        /* Message */
+        #message {
+            text-align: center;
+            margin: 15px 0;
+            min-height: 25px;
+            color: #ffe082;
+            font-weight: bold;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+        }
+
+        /* Current Weather */
+        .current-weather {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .location {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .location h2 {
+            font-size: 30px;
+        }
+
+        .location p {
+            color: #cce7f0;
+            margin-top: 5px;
+        }
+
+        .weather-main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .weather-icon {
+            font-size: 90px;
+        }
+
+        .temperature {
+            font-size: 60px;
+            font-weight: bold;
+        }
+
+        .condition {
+            font-size: 20px;
+            color: #d8f5ff;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .detail {
+            background: rgba(255, 255, 255, 0.10);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .detail .icon {
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .detail strong {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .detail span {
+            color: #c7e5ee;
+            font-size: 14px;
+        }
+
+        /* Section */
+        .section-title {
+            font-size: 25px;
+            margin: 30px 0 15px;
+        }
+
+        /* Forecast */
+        .forecast {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+        }
+
+        .forecast-card {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 15px;
+            padding: 18px 10px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .forecast-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.20);
+        }
+
+        .forecast-day {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .forecast-icon {
+            font-size: 38px;
+            margin: 10px 0;
+        }
+
+        .forecast-temp {
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .forecast-condition {
+            font-size: 12px;
+            color: #c8e5ed;
+            margin-top: 8px;
+        }
+
+        /* Travel */
+        .travel-box {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .travel-status {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .suggestions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .suggestion {
+            background: rgba(255, 255, 255, 0.10);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .suggestion h3 {
+            margin-bottom: 10px;
+            color: #7ee8fa;
+        }
+
+        .suggestion p {
+            color: #d7edf3;
+            line-height: 1.5;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid #00c6ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            color: #b9dce6;
+            padding: 25px 0;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .forecast {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .weather-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .suggestions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 28px;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-box input {
+                width: 100%;
+                max-width: none;
+            }
+
+            .search-box button {
+                width: 100%;
+            }
+
+            .weather-main {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .temperature {
+                font-size: 50px;
+            }
+
+            .forecast {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .weather-details {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🌦️ Smart Weather & Travel</h1>
+        <p>Real-time weather information and intelligent travel suggestions</p>
+    </header>
+
+    <!-- Search -->
+    <div class="search-box">
+        <input
+            type="text"
+            id="cityInput"
+            placeholder="Enter city name (e.g. Chennai)"
+            autocomplete="off"
+        >
+        <button id="searchButton">Search</button>
+    </div>
+
+    <div id="message"></div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top:10px;">Getting weather information...</p>
+    </div>
+
+    <!-- Dashboard -->
+    <main class="dashboard" id="dashboard">
+
+        <!-- Current Weather -->
+        <section class="current-weather">
+
+            <div class="location">
+                <h2 id="cityName">City</h2>
+                <p id="countryName">Country</p>
+            </div>
+
+            <div class="weather-main">
+
+                <div class="weather-icon" id="weatherIcon">
+                    ☀️
+                </div>
+
+                <div>
+                    <div class="temperature" id="temperature">
+                        --°C
+                    </div>
+
+                    <div class="condition" id="condition">
+                        Loading...
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="weather-details">
+
+                <div class="detail">
+                    <div class="icon">💧</div>
+                    <strong id="humidity">--%</strong>
+                    <span>Humidity</span>
+                </div>
+
+                <div class="detail">
+                    <div class="icon">💨</div>
+                    <strong id="wind">-- km/h</strong>
+                    <span>Wind Speed</span>
+                </div>
+
+                <div class="detail">
+                    <div class="icon">🌡️</div>
+                    <strong id="feelsLike">--°C</strong>
+                    <span>Feels Like</span>
+                </div>
+
+                <div class="detail">
+                    <div class="icon">☀️</div>
+                    <strong id="uvIndex">--</strong>
+                    <span>UV Index</span>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Forecast -->
+        <h2 class="section-title">📅 7-Day Forecast</h2>
+
+        <section class="forecast" id="forecast"></section>
+
+        <!-- Travel Suggestions -->
+        <h2 class="section-title">✈️ Smart Travel Suggestions</h2>
+
+        <section class="travel-box">
+
+            <div class="travel-status" id="travelStatus">
+                Analyzing weather...
+            </div>
+
+            <div class="suggestions">
+
+                <div class="suggestion">
+                    <h3>🎒 What to Carry</h3>
+                    <p id="carrySuggestion">
+                        Loading suggestions...
+                    </p>
+                </div>
+
+                <div class="suggestion">
+                    <h3>🚗 Travel Advice</h3>
+                    <p id="travelSuggestion">
+                        Loading suggestions...
+                    </p>
+                </div>
+
+                <div class="suggestion">
+                    <h3>🏞️ Activities</h3>
+                    <p id="activitySuggestion">
+                        Loading suggestions...
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        Smart Weather & Travel Dashboard | Built with HTML, CSS & JavaScript
+    </footer>
+
+</div>
+
+
+<script>
+
+    /*
+        SMART WEATHER & TRAVEL DASHBOARD
+
+        Weather API:
+        Open-Meteo
+
+        No API key is required.
+    */
+
+    const cityInput = document.getElementById("cityInput");
+    const searchButton = document.getElementById("searchButton");
+
+    const dashboard = document.getElementById("dashboard");
+    const loading = document.getElementById("loading");
+    const message = document.getElementById("message");
+
+    const cityName = document.getElementById("cityName");
+    const countryName = document.getElementById("countryName");
+
+    const weatherIcon = document.getElementById("weatherIcon");
+    const temperature = document.getElementById("temperature");
+    const condition = document.getElementById("condition");
+
+    const humidity = document.getElementById("humidity");
+    const wind = document.getElementById("wind");
+    const feelsLike = document.getElementById("feelsLike");
+    const uvIndex = document.getElementById("uvIndex");
+
+    const forecast = document.getElementById("forecast");
+
+    const travelStatus = document.getElementById("travelStatus");
+    const carrySuggestion = document.getElementById("carrySuggestion");
+    const travelSuggestion = document.getElementById("travelSuggestion");
+    const activitySuggestion = document.getElementById("activitySuggestion");
+
+
+    /*
+        Weather Code Explanation
+        Based on WMO weather interpretation codes.
+    */
+
+    function getWeatherInfo(code) {
+
+        const weatherCodes = {
+
+            0: {
+                icon: "☀️",
+                text: "Clear Sky"
+            },
+
+            1: {
+                icon: "🌤️",
+                text: "Mainly Clear"
+            },
+
+            2: {
+                icon: "⛅",
+                text: "Partly Cloudy"
+            },
+
+            3: {
+                icon: "☁️",
+                text: "Overcast"
+            },
+
+            45: {
+                icon: "🌫️",
+                text: "Foggy"
+            },
+
+            48: {
+                icon: "🌫️",
+                text: "Depositing Rime Fog"
+            },
+
+            51: {
+                icon: "🌦️",
+                text: "Light Drizzle"
+            },
+
+            53: {
+                icon: "🌦️",
+                text: "Moderate Drizzle"
+            },
+
+            55: {
+                icon: "🌧️",
+                text: "Heavy Drizzle"
+            },
+
+            61: {
+                icon: "🌦️",
+                text: "Light Rain"
+            },
+
+            63: {
+                icon: "🌧️",
+                text: "Moderate Rain"
+            },
+
+            65: {
+                icon: "🌧️",
+                text: "Heavy Rain"
+            },
+
+            71: {
+                icon: "🌨️",
+                text: "Light Snow"
+            },
+
+            73: {
+                icon: "🌨️",
+                text: "Moderate Snow"
+            },
+
+            75: {
+                icon: "❄️",
+                text: "Heavy Snow"
+            },
+
+            77: {
+                icon: "🌨️",
+                text: "Snow Grains"
+            },
+
+            80: {
+                icon: "🌦️",
+                text: "Light Rain Showers"
+            },
+
+            81: {
+                icon: "🌧️",
+                text: "Moderate Rain Showers"
+            },
+
+            82: {
+                icon: "⛈️",
+                text: "Heavy Rain Showers"
+            },
+
+            85: {
+                icon: "🌨️",
+                text: "Snow Showers"
+            },
+
+            86: {
+                icon: "❄️",
+                text: "Heavy Snow Showers"
+            },
+
+            95: {
+                icon: "⛈️",
+                text: "Thunderstorm"
+            },
+
+            96: {
+                icon: "⛈️",
+                text: "Thunderstorm with Hail"
+            },
+
+            99: {
+                icon: "⛈️",
+                text: "Severe Thunderstorm"
+            }
+        };
+
+        return weatherCodes[code] || {
+            icon: "🌤️",
+            text: "Unknown Weather"
+        };
+    }
+
+
+    /*
+        Search city using Open-Meteo Geocoding API.
+    */
+
+    async function getCityCoordinates(city) {
+
+        const url =
+            "https://geocoding-api.open-meteo.com/v1/search" +
+            "?name=" + encodeURIComponent(city) +
+            "&count=1" +
+            "&language=en" +
+            "&format=json";
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Unable to search for the city.");
+        }
+
+        const data = await response.json();
+
+        if (!data.results || data.results.length === 0) {
+            throw new Error(
+                "City not found. Please enter a valid city name."
+            );
+        }
+
+        return data.results[0];
+    }
+
+
+    /*
+        Get weather information.
+    */
+
+    async function getWeather(latitude, longitude) {
+
+        const url =
+            "https://api.open-meteo.com/v1/forecast" +
+            "?latitude=" + latitude +
+            "&longitude=" + longitude +
+            "&current=" +
+            "temperature_2m," +
+            "relative_humidity_2m," +
+            "apparent_temperature," +
+            "weather_code," +
+            "wind_speed_10m," +
+            "uv_index" +
+            "&daily=" +
+            "weather_code," +
+            "temperature_2m_max," +
+            "temperature_2m_min" +
+            "&timezone=auto";
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(
+                "Unable to retrieve weather information."
+            );
+        }
+
+        return await response.json();
+    }
+
+
+    /*
+        Display current weather.
+    */
+
+    function displayCurrentWeather(location, data) {
+
+        const current = data.current;
+
+        const info = getWeatherInfo(
+            current.weather_code
+        );
+
+        cityName.textContent =
+            location.name;
+
+        countryName.textContent =
+            (location.admin1 ? location.admin1 + ", " : "") +
+            (location.country || "");
+
+        weatherIcon.textContent =
+            info.icon;
+
+        temperature.textContent =
+            Math.round(current.temperature_2m) + "°C";
+
+        condition.textContent =
+            info.text;
+
+        humidity.textContent =
+            current.relative_humidity_2m + "%";
+
+        wind.textContent =
+            Math.round(current.wind_speed_10m) + " km/h";
+
+        feelsLike.textContent =
+            Math.round(current.apparent_temperature) + "°C";
+
+        uvIndex.textContent =
+            Number(current.uv_index).toFixed(1);
+    }
+
+
+    /*
+        Display seven-day forecast.
+    */
+
+    function displayForecast(data) {
+
+        forecast.innerHTML = "";
+
+        const daily = data.daily;
+
+        for (let i = 0; i < daily.time.length; i++) {
+
+            const date = new Date(
+                daily.time[i] + "T00:00:00"
+            );
+
+            const dayName = date.toLocaleDateString(
+                "en-US",
+                {
+                    weekday: "short"
+                }
+            );
+
+            const info = getWeatherInfo(
+                daily.weather_code[i]
+            );
+
+            const maxTemp =
+                Math.round(
+                    daily.temperature_2m_max[i]
+                );
+
+            const minTemp =
+                Math.round(
+                    daily.temperature_2m_min[i]
+                );
+
+            const card =
+                document.createElement("div");
+
+            card.className = "forecast-card";
+
+            card.innerHTML = `
+                <div class="forecast-day">
+                    ${i === 0 ? "Today" : dayName}
+                </div>
+
+                <div class="forecast-icon">
+                    ${info.icon}
+                </div>
+
+                <div class="forecast-temp">
+                    ${maxTemp}° / ${minTemp}°
+                </div>
+
+                <div class="forecast-condition">
+                    ${info.text}
+                </div>
+            `;
+
+            forecast.appendChild(card);
+        }
+    }
+
+
+    /*
+        Generate travel suggestions.
+    */
+
+    function generateTravelSuggestions(data) {
+
+        const current =
+            data.current;
+
+        const temp =
+            current.temperature_2m;
+
+        const code =
+            current.weather_code;
+
+        const windSpeed =
+            current.wind_speed_10m;
+
+        const uv =
+            current.uv_index;
+
+
+        /*
+            Rain / Storm
+        */
+
+        if (
+            code >= 51 &&
+            code <= 99
+        ) {
+
+            travelStatus.textContent =
+                "⚠️ Weather may affect outdoor travel";
+
+            carrySuggestion.textContent =
+                "Carry an umbrella or raincoat, waterproof footwear, and a small waterproof bag for electronics.";
+
+            travelSuggestion.textContent =
+                "Drive carefully and allow extra travel time because roads may be wet or visibility may be reduced.";
+
+            activitySuggestion.textContent =
+                "Consider museums, shopping malls, cafes, restaurants, cinemas, or other indoor attractions.";
+
+            return;
+        }
+
+
+        /*
+            Very hot weather
+        */
+
+        if (temp >= 35) {
+
+            travelStatus.textContent =
+                "🥵 Very hot weather — plan carefully";
+
+            carrySuggestion.textContent =
+                "Carry plenty of water, sunglasses, sunscreen, a hat, and light cotton clothing.";
+
+            travelSuggestion.textContent =
+                "Avoid long outdoor journeys during the hottest part of the day. Prefer early morning or evening travel.";
+
+            activitySuggestion.textContent =
+                "Choose indoor attractions, beaches during cooler hours, swimming, or air-conditioned locations.";
+
+            return;
+        }
+
+
+        /*
+            Cold weather
+        */
+
+        if (temp <= 15) {
+
+            travelStatus.textContent =
+                "🧥 Cool weather — dress warmly";
+
+            carrySuggestion.textContent =
+                "Carry a jacket, warm clothing, socks, and an umbrella if rain is expected.";
+
+            travelSuggestion.textContent =
+                "Outdoor travel is possible, but keep warm and check the forecast before visiting remote areas.";
+
+            activitySuggestion.textContent =
+                "Good time for sightseeing, cafes, museums, historical locations, and scenic walks.";
+
+            return;
+        }
+
+
+        /*
+            Strong wind
+        */
+
+        if (windSpeed >= 35) {
+
+            travelStatus.textContent =
+                "💨 Windy conditions — use caution";
+
+            carrySuggestion.textContent =
+                "Carry a light jacket and secure loose items such as hats and bags.";
+
+            travelSuggestion.textContent =
+                "Be cautious while cycling, riding two-wheelers, or visiting exposed coastal locations.";
+
+            activitySuggestion.textContent =
+                "Prefer sheltered attractions and avoid activities that depend heavily on calm weather.";
+
+            return;
+        }
+
+
+        /*
+            High UV
+        */
+
+        if (uv >= 7) {
+
+            travelStatus.textContent =
+                "☀️ Excellent weather, but UV is high";
+
+            carrySuggestion.textContent =
+                "Carry sunscreen, sunglasses, water, and a hat.";
+
+            travelSuggestion.textContent =
+                "Outdoor travel is suitable, but take regular breaks from direct sunlight.";
+
+            activitySuggestion.textContent =
+                "Great for sightseeing, parks, beaches, photography, and outdoor attractions.";
+
+            return;
+        }
+
+
+        /*
+            Normal pleasant weather
+        */
+
+        travelStatus.textContent =
+            "🌈 Excellent weather for travel!";
+
+        carrySuggestion.textContent =
+            "Carry water, sunglasses, comfortable shoes, and light clothing.";
+
+        travelSuggestion.textContent =
+            "Outdoor travel conditions look comfortable. Normal travel precautions should be sufficient.";
+
+        activitySuggestion.textContent =
+            "Perfect for sightseeing, photography, parks, walking tours, outdoor cafes, and local attractions.";
+    }
+
+
+    /*
+        Main application function.
+    */
+
+    async function searchWeather() {
+
+        const city =
+            cityInput.value.trim();
+
+        if (city === "") {
+
+            message.textContent =
+                "Please enter a city name.";
+
+            dashboard.style.display =
+                "none";
+
+            return;
+        }
+
+        message.textContent = "";
+
+        loading.style.display =
+            "block";
+
+        dashboard.style.display =
+            "none";
+
+        searchButton.disabled =
+            true;
+
+        try {
+
+            /*
+                Step 1:
+                Find city coordinates.
+            */
+
+            const location =
+                await getCityCoordinates(city);
+
+
+            /*
+                Step 2:
+                Get weather.
+            */
+
+            const data =
+                await getWeather(
+                    location.latitude,
+                    location.longitude
+                );
+
+
+            /*
+                Step 3:
+                Display information.
+            */
+
+            displayCurrentWeather(
+                location,
+                data
+            );
+
+            displayForecast(data);
+
+            generateTravelSuggestions(data);
+
+
+            /*
+                Show dashboard.
+            */
+
+            dashboard.style.display =
+                "block";
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                error.message ||
+                "Something went wrong. Please try again.";
+
+            dashboard.style.display =
+                "none";
+
+        } finally {
+
+            loading.style.display =
+                "none";
+
+            searchButton.disabled =
+                false;
+        }
+    }
+
+
+    /*
+        Search button event.
+    */
+
+    searchButton.addEventListener(
+        "click",
+        searchWeather
+    );
+
+
+    /*
+        Press Enter to search.
+    */
+
+    cityInput.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+                searchWeather();
+            }
+
+        }
+    );
+
+
+    /*
+        Default city.
+        Change this to any city you want.
+    */
+
+    cityInput.value = "Chennai";
+
+    searchWeather();
+
+</script>
+
+</body>
+</html>
